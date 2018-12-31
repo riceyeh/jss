@@ -1,7 +1,7 @@
 import {stripIndent} from 'common-tags'
 import expect from 'expect.js'
-import {create} from 'jss'
-import nested from 'jss-plugin-nested'
+import {create} from '../../jss/src'
+import nested from '../../jss-plugin-nested/src'
 
 import global from './index'
 
@@ -380,6 +380,17 @@ describe('jss-plugin-global', () => {
           '  }\n' +
           '}'
       )
+    })
+
+    it('should handle conditionals with pseudo-selector inside', () => {
+      const sheet = jss2.createStyleSheet({
+        '@global a': {
+          '&:focus': {
+            color: 'red'
+          }
+        }
+      })
+      expect(sheet.toString()).to.be('a:focus: {\n  color: red;\n}')
     })
   })
 })

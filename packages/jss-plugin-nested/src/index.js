@@ -78,13 +78,16 @@ export default function jssNested(): Plugin {
     let replaceRef
     for (const prop in style) {
       const isNested = prop.indexOf('&') !== -1
+      const isPseudoSelector = prop.indexOf('&:') !== -1
       const isNestedConditional = prop[0] === '@'
 
-      if (!isNested && !isNestedConditional) continue
+      if (!isPseudoSelector && !isNested && !isNestedConditional) continue
 
       options = getOptions(styleRule, container, options)
 
-      if (isNested) {
+      if (isPseudoSelector) {
+        //
+      } else if (isNested) {
         let selector = replaceParentRefs(prop, styleRule.selector)
         // Lazily create the ref replacer function just once for
         // all nested rules within the sheet.
