@@ -39,6 +39,29 @@ const getStyles = <Theme: {}>(styles: Styles<Theme>, theme: Theme) => {
   if (typeof styles !== 'function') {
     return styles
   }
+  if (process.env.NODE_ENV !== 'production') {
+    if (styles.length < 1) {
+      console.warn(
+        `
+        Warning: [JSS]: This Component uses themed styles notation (function) while not relying on a theme (0 arguments).
+        It slows your app down and you should rewrite these styles to plain object notation.
+      `
+          .replace(/[\s]{2,}/gim, ' ')
+          .trim()
+      )
+    }
+    if (styles.length > 1) {
+      console.warn(
+        `
+        Warning: [JSS]: This Component's themed styles expect more than 1 argument.
+        React-jss provides only one argument.
+      `
+          .replace(/[\s]{2,}/gim, ' ')
+          .trim()
+      )
+    }
+  }
+
   return styles(theme)
 }
 
