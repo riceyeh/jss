@@ -3,6 +3,7 @@ import React, {Component, type ComponentType, type Node} from 'react'
 import hoistNonReactStatics from 'hoist-non-react-statics'
 import {getDynamicStyles, SheetsManager, type StyleSheet} from 'jss'
 import {ThemeContext} from 'theming'
+import warning from 'tiny-warning'
 
 import type {HOCProps, Options, Styles, InnerProps} from './types'
 import getDisplayName from './getDisplayName'
@@ -35,32 +36,20 @@ let managersCounter = 0
 
 const NoRenderer = (props: {children?: Node}) => props.children || null
 
-const getStyles = <Theme: {}>(styles: Styles<Theme>, theme: Theme) => {
+const getStyles = <Theme: {}>(styles: Styles<Theme>, theme: Theme, displayName: string) => {
   if (typeof styles !== 'function') {
     return styles
   }
-  if (process.env.NODE_ENV !== 'production') {
-    if (styles.length < 1) {
-      console.warn(
-        `
-        Warning: [JSS]: This Component uses themed styles notation (function) while not relying on a theme (0 arguments).
-        It slows your app down and you should rewrite these styles to plain object notation.
-      `
-          .replace(/[\s]{2,}/gim, ' ')
-          .trim()
-      )
-    }
-    if (styles.length > 1) {
-      console.warn(
-        `
-        Warning: [JSS]: This Component's themed styles expect more than 1 argument.
-        React-jss provides only one argument.
-      `
-          .replace(/[\s]{2,}/gim, ' ')
-          .trim()
-      )
-    }
-  }
+  warning(
+    styles.length < 1,
+    `Warning: [JSS]: <${displayName} />'s styles function doesn't rely on a theme. We recommend to rewrite it to plain object.\nRead more: https://github.com/cssinjs/jss/blob/master/docs/react-jss.md#basic`
+  )
+  warning(
+    styles.length > 1,
+    `Warning: [JSS]: <${displayName} />'s styles function uses ${
+      styles.length
+    } arguments, but react-jss passes only theme as 1st and only argument. We recommend to rewrite it to take only one argument.\nRead more: https://github.com/cssinjs/jss/blob/master/docs/react-jss.md#theming`
+  )
 
   return styles(theme)
 }
@@ -157,7 +146,7 @@ export default function withStyles<Theme: {}, S: Styles<Theme>>(
           return staticSheet
         }
 
-        const themedStyles = getStyles(styles, theme)
+        const themedStyles = getStyles(styles, theme, displayName)
         const contextSheetOptions = this.props.jssContext.sheetOptions
         staticSheet = this.jss.createStyleSheet(themedStyles, {
           ...sheetOptions,
